@@ -299,19 +299,21 @@ let app = () => {
 
     }
 
-    self.writedata = function (file, data) {
+    self.writetofile = function (file, data) {
         fs.writeFileSync("./" + file, data, "utf8");
     }
 
     /*
-        Replace AV tags with ET tags
+        Replace the AV tags and attributes to ET. This is where the remainder of magic happens 🪄
+        To update attribute replacement rules, edit ./config/attributes.json
+        To update tag replacement rules, edit ./config/tags.js
     */
-    self.replacetag = function (section, tag) {
+    self.replacetag = function (parent, tag) {
 
         // For each 'tag' encountered 
-        section.find(tag).each(function() {
+        parent.find(tag).each(function() {
             
-            // Adapt the attributes
+            // Extract the AV attributes
             var avattributes = {};
             $.each(this.attributes, function(i, attr) {
                 avattributes[attr.name] = attr.value
@@ -319,9 +321,10 @@ let app = () => {
                     .replace(/’/g, "")
                     .replace(/′/g, "")
             });
+            
+            // Convert the AV attributes to ET attributes
             var etattributes = self.adaptattributes(avattributes);
-        
-            // Replace  the tag
+
             $(this).replaceWith(function() {
                 return processtag($, multiline, tag, etattributes, this);
             });
