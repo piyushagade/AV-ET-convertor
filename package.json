@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "jquery": "^3.7.1",
+    "jsdom": "^24.1.0",
+    "lodash": "^4.17.21",
+    "multiline": "^2.0.0",
+    "userland": "^0.4.1"
+  },
+  "scripts": {
+    "start": "cls & node ./src/fsm.js"
+  }
+}
