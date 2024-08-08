@@ -7,7 +7,7 @@ let app = () => {
     var jsdom     = require('jsdom');
     var $         = require('jquery')(new jsdom.JSDOM().window);
     var LOG       = false;
-    var processtag = require("../config/tags");
+    var tags = require("../config/tags");
 
     self.init = () => {
 
@@ -39,7 +39,7 @@ let app = () => {
             For every child in the AV document,  
         */
         
-        var firstchildflag = true;
+        var isfirstchild = true;
         var rowcount = 0;
         var columnsum = 0;
         var columnsdata = [];
@@ -55,8 +55,8 @@ let app = () => {
             }
             else {
                 console.log("\n🦙  Orphan found: " + avdocumentchild.nodeName);
-                var lastchild = $(avdocumentchild).next().length == 0;
-                var nextsiblingissection = !lastchild && $(avdocumentchild).next().get(0).nodeName == "AV_SECTION";
+                var islastchild = $(avdocumentchild).next().length == 0;
+                var nextsiblingissection = !islastchild && $(avdocumentchild).next().get(0).nodeName == "AV_SECTION";
 
                 if (previoussiblingwassection || !wrappersection) {
                     console.log("🍬  New wrapper");
@@ -93,7 +93,7 @@ let app = () => {
                     "section-id": sectionid
                 })
 
-                firstchildflag = true;
+                isfirstchild = true;
             }
             else {
                 
@@ -103,14 +103,14 @@ let app = () => {
                     Is this the first column encountered after a section?
                     Or if is this the first child encountered?
                 */
-                var sectionid = $(self.etdocument).find("et_pb_section").length + (firstchildflag ? 0 : -1);
-                etsection = firstchildflag ? self.createsection({
+                var sectionid = $(self.etdocument).find("et_pb_section").length + (isfirstchild ? 0 : -1);
+                etsection = isfirstchild ? self.createsection({
                     "section-id": sectionid
                 }) : self.getsection({
                     "section-id": sectionid
                 });
                 
-                firstchildflag = false;
+                isfirstchild = false;
             }
 
 
@@ -172,25 +172,9 @@ let app = () => {
                 /*
                     Convert AV tags to ET
                 */
-                
-                // Replace textblocks
-                self.replacetag(etsection, "av_textblock");
-
-                // Replace imageblocks
-                self.replacetag(etsection, "av_image");
-
-                // Replace testimonials
-                self.replacetag(etsection, "av_testimonials");
-
-                // Replace heading
-                self.replacetag(etsection, "av_heading");
-                
-                // Replace video
-                self.replacetag(etsection, "av_video");
-                
-                // Replace codeblock
-                self.replacetag(etsection, "av_codeblock");
-
+                tags.supported.forEach((tag, ti) => {
+                    self.replacetag(etsection, tag);
+                });
             }
 
             else {
@@ -227,7 +211,7 @@ let app = () => {
         if ($(self.etdocument).find("et_pb_section[section_id='" + si + "']").length == 0) {
 
             $(self.etdocument).append(multiline(() => {/*
-                <et_pb_section section_id="{{section-id}}" fb_built="1" _builder_version="4.16" global_colors_info="{}" custom_margin="||0px||false|false" $></et_pb_section$>
+                <et_pb_section section_id="{{section-id}}" fb_built="1" _builder_version="4.16" global_colors_info="{}" custom_margin="||0px||false|false" custom_padding="0px||0px||false|false" $></et_pb_section$>
             */}, {
                 "section-id": si
             }));
@@ -326,7 +310,7 @@ let app = () => {
             var etattributes = self.adaptattributes(avattributes);
 
             $(this).replaceWith(function() {
-                return processtag($, multiline, tag, etattributes, this);
+                return tags.process($, multiline, tag, etattributes, this);
             });
         });
     }
